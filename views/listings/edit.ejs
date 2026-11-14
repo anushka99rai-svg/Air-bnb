@@ -6,33 +6,33 @@
     <h3>Edit Listing</h3>
     <div class="mb-3">
         <label for="title" class="form-label">Title</label>
-        <input name="title" value="<%=listing.title %>" type="text" id="title" required class="form-control">
+        <input name="listing[title]" value="<%=listing.title %>" type="text" id="title" required class="form-control">
     </div>
 
     <div class="mb-3">
         <label for="description" class="form-label">Description</label>
-        <textarea name="description" id="description" class="form-control"><%=listing.description %></textarea>
+        <textarea name="listing[description]" id="description" class="form-control"><%=listing.description %></textarea>
     </div>
 
     <div class="mb-3">
         <label for="image" class="form-label">Image</label>
-        <input name="image"  type="text" class="form-control" id="image" value="<%=listing.image %>">
+        <input name="listing[image]"  type="text" class="form-control" id="image" value="<%=listing.image %>">
     </div>
  
     <div class="row">
 
          <div class="mb-3 md:col-4">
         <label for="price" class="form-label">Price</label>
-        <input name="price" value="<%=listing.price %>" type="number" id="price" class="form-control">
+        <input name="listing[price]" value="<%=listing.price %>" type="number" id="price" class="form-control">
         </div>
     <div class="mb-3 md:col-8">
          <label for="location" class="form-label">Location</label>
-         <input name="location" value="<%=listing.location%>" type="text" id="location" class="form-control">
+         <input name="listing[location]" value="<%=listing.location%>" type="text" id="location" class="form-control">
     </div>
     </div>
     <div class="mb-3">
         <label for="country" class="form-label">Country</label>
-        <input name="country" value="<%=listing.country %>" type="text" id="country" class="form-control">
+        <input name="listing[country]" value="<%=listing.country %>" type="text" id="country" class="form-control">
     </div>
 
      <div class="mb-3">

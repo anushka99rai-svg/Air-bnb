@@ -5,7 +5,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green.svg?logo=mongodb)](https://www.mongodb.com/)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-A full-stack web application replicating core functionalities of **Airbnb**, built with **Node.js**, **Express.js**, **MongoDB**, and **EJS**. Wanderlust allows users to explore, create, edit, and manage curated travel accommodation listings around the world.
+A full-stack web application replicating core functionalities of **Airbnb**, built with **Node.js**, **Express.js**, **MongoDB**, and **EJS**. Wanderlust allows users to explore, create, edit, and manage curated travel accommodation listings around the world, as well as share and manage property reviews and ratings.
 
 ---
 
@@ -29,24 +29,28 @@ A full-stack web application replicating core functionalities of **Airbnb**, bui
 
 ## 🌟 Overview
 
-**Wanderlust** is designed to provide travelers and hosts with an intuitive lodging marketplace experience. The application implements standard RESTful design principles, robust asynchronous error handling, relational data modeling with Mongoose, and schema validation on both client and server sides.
+**Wanderlust** is designed to provide travelers and hosts with an intuitive lodging marketplace experience. The application implements standard RESTful design principles, robust asynchronous error handling, relational data modeling with Mongoose (one-to-many relationships with listings and reviews), and schema validation on both client and server sides.
 
 ---
 
 ## ✨ Key Features
 
-- **Full CRUD Operations**:
+- **Listing Management (Full CRUD)**:
   - **Create**: Add new properties with custom titles, descriptions, pricing, locations, and images.
   - **Read**: Explore all property listings in a responsive card grid, or click into a listing for detailed views.
   - **Update**: Edit existing listing details via pre-filled forms.
   - **Delete**: Remove listings safely with automatic redirection.
+- **Reviews & Ratings System**:
+  - Leave reviews with star ratings (1 to 5) and custom comments for any property.
+  - View all community reviews presented in a clean, multi-column card layout on the listing details page.
+  - Delete individual reviews with automatic Mongoose `$pull` reference cleanup from the parent listing.
 - **Responsive & Modern UI**:
   - Templating powered by `ejs-mate` layouts and modular EJS partials (Navbar, Footer).
-  - Modern styling using Bootstrap and custom CSS typography (Google Sans, Font Awesome).
+  - Modern styling using Bootstrap and custom typography (Google Sans, Font Awesome).
   - Currency localized display in Indian Rupees (INR).
 - **Client & Server Validation**:
   - Real-time client-side form validation feedback with custom JavaScript.
-  - Robust server-side schema verification powered by **Joi**.
+  - Robust server-side schema verification powered by **Joi** for listings and reviews.
 - **Centralized Error Handling**:
   - Custom `ExpressError` class for standard HTTP status codes.
   - `wrapAsync` utility function to catch and forward asynchronous exceptions without crashing the server.
@@ -83,7 +87,8 @@ AirBnb/
 │   ├── data.js               # Sample listing dataset
 │   └── index.js              # Script to populate MongoDB with initial data
 ├── models/                   # Mongoose schemas and data models
-│   └── listing.js            # Listing model definition
+│   ├── listing.js            # Listing model definition (with reviews ref)
+│   └── review.js             # Review model definition
 ├── public/                   # Static assets served by Express
 │   ├── css/
 │   │   └── style.css         # Custom layout, card, and navbar styles
@@ -103,9 +108,9 @@ AirBnb/
 │       ├── error.ejs         # Error display page
 │       ├── index.ejs         # All listings catalog page
 │       ├── new.ejs           # Create listing form
-│       └── show.ejs          # Listing details view
+│       └── show.ejs          # Listing details view with review form & list
 ├── app.js                    # Application entry point and route configurations
-├── schema.js                 # Joi validation schema definition
+├── schema.js                 # Joi validation schemas (listings & reviews)
 ├── package.json              # Project metadata, scripts, and dependencies
 ├── .gitignore                # Git ignore rules
 └── README.md                 # Project documentation
@@ -117,16 +122,25 @@ AirBnb/
 
 The application follows standard REST architectural conventions:
 
+### Listings Routes
+
 | HTTP Method | Route | Description | Action / View |
 |:---|:---|:---|:---|
 | **GET** | `/` | Root health check | Simple landing message |
 | **GET** | `/listings` | Display list of all listings | `views/listings/index.ejs` |
 | **GET** | `/listings/new` | Form to create a new listing | `views/listings/new.ejs` |
 | **POST** | `/listings` | Create a new listing | Database insert & redirect to `/listings` |
-| **GET** | `/listings/:id` | Show specific listing details | `views/listings/show.ejs` |
+| **GET** | `/listings/:id` | Show specific listing & populated reviews | `views/listings/show.ejs` |
 | **GET** | `/listings/:id/edit` | Form to edit an existing listing | `views/listings/edit.ejs` |
 | **PATCH** | `/listings/:id` | Update a specific listing | Database update & redirect to `/listings` |
 | **DELETE** | `/listings/:id` | Delete a specific listing | Database delete & redirect to `/listings` |
+
+### Reviews Routes
+
+| HTTP Method | Route | Description | Action / View |
+|:---|:---|:---|:---|
+| **POST** | `/listings/:id/reviews` | Create a new review for a listing | Insert review, push ref to listing & redirect to `/listings/:id` |
+| **DELETE** | `/listings/:id/reviews/:reviewId` | Delete a review from a listing | Remove review document, `$pull` ref from listing & redirect to `/listings/:id` |
 
 ---
 
@@ -208,7 +222,9 @@ http://localhost:8080/listings
   Forms use Bootstrap validation styles alongside custom validation logic in `public/js/validateForm.js` to prevent submitting empty or invalid inputs.
 
 - **Server-Side Validation**:
-  Incoming requests on `/listings` endpoints are validated against `listingSchema` in `schema.js` using **Joi**. Any malformed data immediately triggers a `400 Bad Request` with descriptive error details.
+  - Listings incoming requests are validated against `listingSchema` in `schema.js`.
+  - Reviews incoming requests are validated against `reviewSchema` in `schema.js` (requiring ratings between 1 and 5 and comments).
+  - Any malformed data immediately triggers a `400 Bad Request` with descriptive error details.
 
 - **Global Error Handling**:
   All asynchronous controller operations are wrapped in `wrapAsync` to funnel unhandled exceptions to the centralized error middleware in `app.js`, which renders `views/listings/error.ejs` with appropriate status codes and error messages.
@@ -218,7 +234,7 @@ http://localhost:8080/listings
 ## 🔮 Future Enhancements
 
 - [ ] **User Authentication & Authorization**: User registration, login, and permissions using Passport.js.
-- [ ] **Reviews & Ratings**: Allow guests to leave reviews and 1–5 star ratings for stays.
+- [x] **Reviews & Ratings**: Allow guests to leave reviews and 1–5 star ratings for stays.
 - [ ] **Interactive Maps**: Integrate Mapbox SDK or Google Maps API for geolocation visualization.
 - [ ] **Cloud Image Uploads**: Replace URL inputs with file uploads directly to Cloudinary or AWS S3.
 - [ ] **Search & Filtering**: Search by location, title, or filter by category (Beachfront, Cabins, Iconic Cities).
